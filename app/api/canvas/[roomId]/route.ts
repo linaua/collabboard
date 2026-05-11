@@ -3,11 +3,11 @@ import { pusherServer } from '@/lib/pusher';
 import { kv } from '@vercel/kv';
 
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { roomId: string } }
+  request: Request,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
-    const { roomId } = params;
+    const { roomId } = await params;
     const [rawCommands, undoneRaw] = await Promise.all([
       kv.lrange(`room:${roomId}:commands`, 0, -1),
       kv.smembers(`room:${roomId}:undone`),
@@ -28,10 +28,10 @@ export async function GET(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
-    const { roomId } = params;
+    const { roomId } = await params;
     await Promise.all([
       kv.del(`room:${roomId}:commands`),
       kv.del(`room:${roomId}:undone`),
